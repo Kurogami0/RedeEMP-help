@@ -45,6 +45,21 @@
         input[type="submit"]:hover {
             background-color: #555;
         }
+        .progress {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .progress-bar {
+            width: 0%;
+            height: 30px;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -59,7 +74,7 @@
     
     <div class="donation-form">
         <h2>Faça sua Doação</h2>
-        <form action="obrigado.html" method="post">
+        <form id="donation-form" action="obrigado.html" method="post">
             <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" required>
             <label for="email">E-mail:</label>
@@ -71,7 +86,37 @@
             <input type="submit" value="Doar">
         </form>
     </div>
+
+    <div class="progress">
+        <div id="progress-bar" class="progress-bar"></div>
+    </div>
 </div>
+
+<script>
+    document.getElementById('donation-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission
+        
+        // Get the donation amount
+        var donationAmount = parseFloat(document.getElementById('valor').value);
+        
+        // Get the current total donated
+        var currentTotal = parseFloat(localStorage.getItem('totalDonated')) || 0;
+        
+        // Update the total donated
+        currentTotal += donationAmount;
+        localStorage.setItem('totalDonated', currentTotal);
+        
+        // Update the progress bar
+        var progressBar = document.getElementById('progress-bar');
+        var totalGoal = 1000; // Change this to your donation goal
+        var percentComplete = (currentTotal / totalGoal) * 100;
+        progressBar.style.width = percentComplete + '%';
+        progressBar.textContent = 'R$ ' + currentTotal.toFixed(2) + ' arrecadados';
+        
+        // Reset the form
+        document.getElementById('donation-form').reset();
+    });
+</script>
 
 </body>
 </html>
