@@ -4,63 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doação de Dinheiro</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            padding: 20px 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-        .donation-form {
-            background-color: #f4f4f4;
-            padding: 20px;
-            border-radius: 5px;
-        }
-        input[type="text"], input[type="email"], input[type="number"], textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0 20px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        input[type="submit"] {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: #555;
-        }
-        .progress {
-            width: 100%;
-            background-color: #ddd;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        .progress-bar {
-            width: 0%;
-            height: 30px;
-            background-color: #4caf50;
-            text-align: center;
-            line-height: 30px;
-            color: white;
-            border-radius: 5px;
-        }
-    </style>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
 </head>
 <body>
 
@@ -74,47 +18,55 @@
     
     <div class="donation-form">
         <h2>Faça sua Doação</h2>
-        <form id="donation-form" action="obrigado.html" method="post">
+        <form id="donation-form">
             <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" required>
             <label for="email">E-mail:</label>
             <input type="email" id="email" name="email" required>
             <label for="valor">Valor da Doação (R$):</label>
             <input type="number" id="valor" name="valor" min="1" required>
-            <label for="mensagem">Mensagem (opcional):</label>
-            <textarea id="mensagem" name="mensagem" rows="4"></textarea>
-            <input type="submit" value="Doar">
+            <button id="pay-button">Doar</button>
         </form>
-    </div>
-
-    <div class="progress">
-        <div id="progress-bar" class="progress-bar"></div>
     </div>
 </div>
 
 <script>
+    // Configure o SDK do Mercado Pago com suas credenciais
+    Mercadopago.setPublishableKey('TEST-9ffa6bf6-ba9b-40f8-b9ef-8f50c6cd84df');
+
+    // Adicione um listener ao formulário de doação
     document.getElementById('donation-form').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent form submission
-        
-        // Get the donation amount
+        event.preventDefault(); // Evite o envio padrão do formulário
+
+        // Obtenha os dados do formulário
         var donationAmount = parseFloat(document.getElementById('valor').value);
-        
-        // Get the current total donated
-        var currentTotal = parseFloat(localStorage.getItem('totalDonated')) || 0;
-        
-        // Update the total donated
-        currentTotal += donationAmount;
-        localStorage.setItem('totalDonated', currentTotal);
-        
-        // Update the progress bar
-        var progressBar = document.getElementById('progress-bar');
-        var totalGoal = 1000; // Change this to your donation goal
-        var percentComplete = (currentTotal / totalGoal) * 100;
-        progressBar.style.width = percentComplete + '%';
-        progressBar.textContent = 'R$ ' + currentTotal.toFixed(2) + ' arrecadados';
-        
-        // Reset the form
-        document.getElementById('donation-form').reset();
+        var payerName = document.getElementById('nome').value;
+        var payerEmail = document.getElementById('email').value;
+
+        // Crie um objeto de preferência de pagamento
+        var preference = {
+            items: [
+                {
+                    title: 'Doação',
+                    unit_price: donationAmount,
+                    quantity: 1
+                }
+            ],
+            payer: {
+                name: payerName,
+                email: payerEmail
+            }
+        };
+
+        // Crie uma preferência de pagamento no Mercado Pago
+        Mercadopago.preferences.create(preference)
+        .then(function(response) {
+            // Redirecione para o link de pagamento
+            window.location = response.body.init_point;
+        })
+        .catch(function(error) {
+            console.error('Erro ao criar preferência de pagamento:', error);
+        });
     });
 </script>
 
